@@ -88,6 +88,64 @@ async function run() {
 
 
 
+    
+
+    app.get('/singleproduct/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const toy = await toyCollection.findOne(query);
+      res.send(toy)
+    })
+
+    app.get('/toys/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const option = {
+        sort: { sellingPrice: 1 }
+      };
+      const toys = await toyCollection.find(query, option).toArray();
+      res.send(toys)
+    })
+    app.get('/toy/:category', async (req, res) => {
+      const category = req.params.category;
+      const query = { category: category };
+      const toys = await toyCollection.find(query).toArray();
+      res.send(toys)
+    })
+
+    app.delete('/toys/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await toyCollection.deleteOne(query);
+      res.send(result)
+    })
+    //for data update
+    app.put('/toys/:id', async (req, res) => {
+      const id = req.params.id;
+
+      const updatedProduct = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          toyname: updatedProduct.toyname,
+          sellingPrice: updatedProduct.sellingPrice,
+          stock: updatedProduct.stock,
+          description: updatedProduct.description,
+          image: updatedProduct.image,
+          category: updatedProduct.category
+        },
+      };
+      const result = await toyCollection.updateOne(filter, updateDoc, options);
+      res.send(result)
+    })
+
+
+
+  
+
+
+
 
 
 
