@@ -28,67 +28,34 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // // Connect the client to the server	(optional starting in v4.7)
+    // await client.connect();
     const toyCollection = client.db("etoys").collection("toymarket_etoys");
 
+    // find all toys data from mongodb
+
+    app.get('/toys', async (req, res) => {
+      const toys = await toyCollection.find({}).toArray();
+      res.send(toys)
+    })
 
 
+    // find toy searching by toyname from mongodb
+    const indexkey = { toyname: 1 };
+    const indexOptions = { name: "searchToys" };
 
+    const titleIndex = await toyCollection.createIndex(indexkey, indexOptions);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
+    app.get('/title/:text', async (req, res) => {
+      const searchText = req.params.text;
+      const toy = await toyCollection.find({
+        $or: [
+          { toyname: { $regex: searchText, $options: "i" } }
+        ]
+      }).toArray();
+      res.send(toy)
+      console.log(toy);
+    })
 
     app.get('/singleproduct/:id', async (req, res) => {
       const id = req.params.id;
@@ -100,12 +67,20 @@ async function run() {
     app.get('/toys/:email', async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
+      const toys = await toyCollection.find(query).toArray();
+      res.send(toys)
+    })
+    app.get('/sort/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
       const option = {
         sort: { sellingPrice: 1 }
       };
-      const toys = await toyCollection.find(query, option).toArray();
+      const toys = await toyCollection.find(query ,option).toArray();
       res.send(toys)
     })
+
+    
     app.get('/toy/:category', async (req, res) => {
       const category = req.params.category;
       const query = { category: category };
@@ -140,12 +115,12 @@ async function run() {
       res.send(result)
     })
 
-
-
-  
-
-
-
+    // for data insert
+    app.post('/addtoys', async (req, res) => {
+      const newProduct = req.body;
+      const result = await toyCollection.insertOne(newProduct);
+      res.send(result)
+    })
 
 
 
